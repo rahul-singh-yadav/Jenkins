@@ -1,0 +1,87 @@
+version: '3.8'
+
+networks:
+  jenkins:
+    driver: overlay
+
+volumes:
+  jenkins_data:
+  ssh-agent:
+
+services:
+
+  jenkins-master:
+    image: jenkins/jenkins:lts-jdk11
+    user: jenkins
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    ports:
+      - "80:8080"
+      - "50000:50000"
+    volumes:
+      - "jenkins_data:/var/jenkins_home"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "ssh-agent:/ssh-agent"
+    environment:
+      - JAVA_OPTS= \
+        --Djenkins.install.runSetupWizard=false \
+        --accessLoggerClassName=winstone.accesslog.SimpleAccessLogger \
+        --simpleAccessLogger.format=combined \
+        --simpleAccessLogger.file=/var/jenkins_home/logs/access_log
+      - SSH_AUTH_SOCK=/ssh-agent
+    networks:
+      - jenkins
+
+  jenkins-slave:
+    image: jenkins/inbound-agent:alpine-jdk11
+    user: jenkins
+    deploy:
+      replicas: 5
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    environment:
+      - JENKINS_SECRET=jenkins_secret
+      - JENKINS_TUNNEL=jenkins-master:50000
+      - JENKINS_URL=http://localhost/
+      - JENKINS_AGENT_NAME=jenkins-slave
+      - SSH_AUTH_SOCK=/ssh-agent
+    volumes:
+      - "ssh-agent:/ssh-agent"
+    depends_on:
+      - jenkins-master
+    networks:
+      - jenkins
+
+  ssh-agent:
+    image: jenkins/ssh-agent
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    command: "ssh-agent -a /ssh-agent"
+    # environment:
+    #   - SSH_AUTH_SOCK=/ssh-agent
+    volumes:
+      - "ssh-agent:/ssh-agent"
+    networks:
+      - jenkins
