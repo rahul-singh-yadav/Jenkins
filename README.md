@@ -173,11 +173,11 @@ services:
     networks:
       - jenkins-network
     restart: always
-`
+```
 
 ## Docker-Compose File (v4) {Production}
 
-`
+```yaml
 version: '3.8'
 
 networks:
