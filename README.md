@@ -269,3 +269,118 @@ services:
     networks:
       - jenkins
 ```
+
+## Docker Compose File (v5) [ Production ]
+---
+
+**Improvements over v4**
+
+- Used specific version numbers for the services instead of the "latest" tag to ensure consistent deployments.
+
+- Used a different port other than port 80 for the Jenkins Master service. Port 80 is commonly used for HTTP traffic, and running Jenkins on this port could potentially cause conflicts with other applications.
+
+- Add a health check to the Jenkins Master and Jenkins Slave services to ensure that the containers are functioning properly.
+
+- Consider using a separate overlay network for the Jenkins Slave containers to allow for more granular control over network communication.
+
+- Add resource limits to the Jenkins Master and Jenkins Slave services to prevent them from consuming too many resources on the host machine.
+
+```yaml
+version: '3.8'
+
+networks:
+  jenkins:
+    driver: overlay
+
+volumes:
+  jenkins_data:
+  ssh-agent:
+
+services:
+  jenkins-master:
+    image: jenkins/jenkins:lts-jdk11.2
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - "jenkins_data:/var/jenkins_home"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "ssh-agent:/ssh-agent"
+    environment:
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+      - SSH_AUTH_SOCK=/ssh-agent
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/login"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - jenkins
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: '512M'
+
+  jenkins-slave:
+    image: jenkins/inbound-agent:alpine-jdk11.2
+    deploy:
+      replicas: 5
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    environment:
+      - JENKINS_SECRET=jenkins_secret
+      - JENKINS_TUNNEL=jenkins-master:50000
+      - JENKINS_AGENT_NAME=jenkins-slave
+      - SSH_AUTH_SOCK=/ssh-agent
+    volumes:
+      - "ssh-agent:/ssh-agent"
+    depends_on:
+      - jenkins-master
+    networks:
+      - jenkins
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: '256M'
+
+  ssh-agent:
+    image: jenkins/ssh-agent
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    command: "ssh-agent -a /ssh-agent"
+    environment:
+      - SSH_AUTH_SOCK=/ssh-agent
+    volumes:
+      - "ssh-agent:/ssh-agent"
+    networks:
+      - jenkins
+    deploy:
+      resources:
+        limits:
+```
