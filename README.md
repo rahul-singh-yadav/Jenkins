@@ -1,7 +1,7 @@
 # Docker-Compose File (v1)
 ---
 
-`
+```yaml
 version: '3'
 
 services:
@@ -46,8 +46,7 @@ networks:
 volumes:
   jenkins-data:
   ssh-agent:
-
-`
+```
 
 
 ## Improvements to v1
