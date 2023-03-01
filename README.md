@@ -177,6 +177,17 @@ services:
 
 ## Docker-Compose File (v4) {Production}
 
+**Improvements over v3**
+
+- Upgraded to version 3.8 of the compose file format.
+- Added a driver to the jenkins network for better scaling and resiliency.
+- Added deploy settings for each service to enable better orchestration and scaling.
+- Changed the exposed port for jenkins-master to port 80 for production use.
+- Added JAVA_OPTS environment variable to disable the Jenkins setup wizard.
+- Changed the restart policy for the jenkins-slave service to "on-failure" for better resilience.
+- Changed the restart policy for all services to a more sensible default policy.
+- Removed unnecessary environment variables and options.
+
 ```yaml
 version: '3.8'
 
