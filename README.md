@@ -290,7 +290,7 @@ version: '3.8'
 
 networks:
   jenkins:
-    driver: overlay
+    driver: overlay # Consistent networking at production.
 
 volumes:
   jenkins_data:
