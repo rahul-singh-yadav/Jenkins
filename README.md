@@ -1,4 +1,4 @@
-# Docker-Compose File (v1)
+## Docker-Compose File (v1)
 ---
 
 ```yaml
@@ -53,27 +53,25 @@ volumes:
 ---
 Here are some improvements and fixes for the given Docker Compose file:
 
-Define the version at the top level to avoid repeating it in every service block.
+- Used specific tag versions for the images to ensure consistency and avoid unexpected changes.
 
-Use specific tag versions for the images to ensure consistency and avoid unexpected changes.
+- Used consistent indentation and spacing for better readability.
 
-Use consistent indentation and spacing for better readability.
+- Used singular name for volumes to align with the recommended naming convention used by docker.
 
-Use singular name for volumes to align with the recommended naming convention.
+- Used the restart policy to ensure that the containers are restarted automatically if they fail.
 
-Use the restart policy to ensure that the containers are restarted automatically if they fail.
+- Removed duplicate environment variables from the jenkins-slave service and keep them in a single block.
 
-Remove duplicate environment variables from the jenkins-slave service and keep them in a single block.
+- Added `depends_on` to the *jenkins-slave* service to ensure that it starts after the *jenkins-master* service.
 
-Add depends_on to the jenkins-slave service to ensure that it starts after the jenkins-master service.
-
-Use the network_mode instead of networks to specify the same network for the jenkins-slave and ssh-agent services.
+- Used the `network_mode` instead of `networks` to specify the same network for the *jenkins-slave* and ssh-agent services.
 
 
 ## Docker-Compose File (v2)
 ---
 
-`
+```yaml
 version: '3'
 
 networks:
@@ -120,12 +118,11 @@ services:
       - "ssh-agent:/ssh-agent"
     network_mode: "service:jenkins-master"
     restart: unless-stopped
-
-`
+```
 
 ## Docker-Compose File (V3)
 ---
-`
+```yaml
 version: '3'
 
 networks:
@@ -186,6 +183,10 @@ version: '3.8'
 networks:
   jenkins:
     driver: overlay
+
+volumes:
+  jenkins_data:
+  ssh-agent:
 
 services:
   jenkins-master:
@@ -256,8 +257,4 @@ services:
       - "ssh-agent:/ssh-agent"
     networks:
       - jenkins
-
-volumes:
-  jenkins_data:
-  ssh-agent:
-`
+```
