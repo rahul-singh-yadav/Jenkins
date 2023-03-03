@@ -7,3 +7,5 @@ ENV JAVA_OPTS="-Xmx4096m"
 
 # Connection Pools Tuning & Log File Setup
 ENV JENKINS_OPTS="--handlerCountMax=50 --logfile=/var/log/jenkins/jenkins.log"
+
+

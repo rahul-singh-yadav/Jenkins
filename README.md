@@ -384,3 +384,18 @@ services:
       resources:
         limits:
 ```
+
+### Volumes Used
+---
+For mounting jenkins hosts machine's docker socket.
+- `/var/run/docker.sock:/var/run/docker.sock`
+  
+**Why?**
+---
+The volume - /var/run/docker.sock:/var/run/docker.sock is used to mount the Docker socket from the host machine to the Jenkins master container. This allows the Jenkins master to communicate with the Docker daemon running on the host machine and create and manage Docker containers.
+
+When Docker is installed on a host machine, it exposes a Unix socket at /var/run/docker.sock. By mounting this socket as a volume inside the Jenkins container, the Jenkins container gains access to the Docker API and can perform operations such as creating new containers, starting and stopping containers, and retrieving container logs.
+
+Using the Docker socket in this way provides a lot of flexibility for Jenkins users. For example, Jenkins jobs can be configured to spin up new Docker containers as part of the build process, allowing for a clean and isolated build environment. Additionally, users can use Docker to create custom build environments for their Jenkins jobs, ensuring that builds run consistently across different environments.
+
+It's important to note that mounting the Docker socket inside a container grants privileged access to the Docker daemon, which can potentially be a security risk. Care should be taken to ensure that only trusted users have access to the Jenkins instance and that the Docker daemon is configured securely.
