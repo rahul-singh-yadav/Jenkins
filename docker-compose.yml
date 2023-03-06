@@ -2,42 +2,52 @@ version: "3.9"
 
 services:
   jenkins-master:
-    image: jenkins/jenkins:lts
+    image: jenkins/jenkins:lts-jdk17
     container_name: jenkins-master
+    privileged: true
     ports:
-      - "8080:8080"
-      - "50000:50000"
+      - "50001:8080"
+      - "50002:50000"
     volumes:
-      - ./jenkins_home:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock
+      - ./jenkins_data:/var/jenkins_home
+      - ./executors.groovy:/usr/share/jenkins/ref/init.groovy.d/executors.groovy # Start with no executors
+      - /var/run/docker.sock:/var/run/docker.sock # Builds docker images  & containers from withing Jenkins Container.
     environment:
-      - JENKINS_SLAVE_AGENT_PORT=50000
-      - JENKINS_OPTS= \
-        "--prefix=/jenkins" \
-        "--accessLoggerClassName=winstone.accesslog.SimpleAccessLogger" \
-        "--simpleAccessLogger.format=combined" \
-        "--simpleAccessLogger.file=/var/jenkins_home/logs/access_log"
-    secrets:
-      - jenkins_secrets
+      # - JENKINS_SLAVE_AGENT_PORT=${JENKINS_SLAVE_AGENT_PORT}
+      - JENKINS_OPTS=${ENABLE_ACCESS_LOGS}
+      # - JAVA_OPTS=${SKIP_INITIAL_SETUP} # Skip intial setup wizard (If using automation)
+      - TZ=${TIME_ZONE}
+    # secrets:
+    #   - jenkins_secrets
+    user: jenkins
     networks:
       - jenkins-net
 
-  jenkins-slave:
-    image: jenkins/jnlp-slave:4.11-1
-    container_name: jenkins-slave
+  jenkins-agent:
+    image: jenkins/ssh-agent:jdk17
+    container_name: jenkins-agent-1
+    privileged: true
+    # user: jenkins # By default set to jenkins
+    expose:
+      - 22
     environment:
-      - JENKINS_URL=http://jenkins-master:8080/jenkins
-      - JENKINS_SECRET=<secret-goes-here>
-      - JENKINS_AGENT_NAME=<agent-name-goes-here>
-      - JENKINS_AGENT_WORKDIR=/home/jenkins/agent
-    secrets:
-      - jenkins_secrets
-      - jenkins-agent-name
+      - JENKINS_AGENT_NAME=${AGENT_NAME}
+      - JENKINS_AGENT_SSH_PUBKEY=${PUB_KEY}
+
     networks:
       - jenkins-net
 
-volume:
-  jenkins_home:
+### IF USING DOCKER SWARM ###
+# secrets: 
+#   jenkins-secret:
+#     file: ./jenkins_secrets/jenkins-agent-1
+#   # jenkins-agent-name:
+#   #   file: ./jenkins_agent_name
+
+volumes:
+  jenkins_data:
 
 networks:
   jenkins-net:
+    external:
+      true
