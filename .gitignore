@@ -1,0 +1,5 @@
+.env
+.ssh
+jenkins_data
+jenkins_secrets
+jenkins_backup
