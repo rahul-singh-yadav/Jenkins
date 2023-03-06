@@ -9,8 +9,8 @@ services:
       - "50001:8080"
       - "50002:50000"
     volumes:
-      - ./jenkins_data:/var/jenkins_home
-      - ./executors.groovy:/usr/share/jenkins/ref/init.groovy.d/executors.groovy # Start with no executors
+      - $(pwd)/jenkins_data:/var/jenkins_home
+      - $(pwd)/executors.groovy:/usr/share/jenkins/ref/init.groovy.d/executors.groovy # Start with no executors
       - /var/run/docker.sock:/var/run/docker.sock # Builds docker images  & containers from withing Jenkins Container.
     environment:
       # - JENKINS_SLAVE_AGENT_PORT=${JENKINS_SLAVE_AGENT_PORT}
