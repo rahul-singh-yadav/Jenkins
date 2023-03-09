@@ -9,16 +9,14 @@ services:
       - "50001:8080"
       - "50002:50000"
     volumes:
-      - $(pwd)/jenkins_data:/var/jenkins_home
-      - $(pwd)/executors.groovy:/usr/share/jenkins/ref/init.groovy.d/executors.groovy # Start with no executors
+      - ./jenkins_data:/var/jenkins_home
+      - ./executors.groovy:/usr/share/jenkins/ref/init.groovy.d/executors.groovy # Start with no executors
       - /var/run/docker.sock:/var/run/docker.sock # Builds docker images  & containers from withing Jenkins Container.
     environment:
       # - JENKINS_SLAVE_AGENT_PORT=${JENKINS_SLAVE_AGENT_PORT}
       - JENKINS_OPTS=${ENABLE_ACCESS_LOGS}
       # - JAVA_OPTS=${SKIP_INITIAL_SETUP} # Skip intial setup wizard (If using automation)
       - TZ=${TIME_ZONE}
-    # secrets:
-    #   - jenkins_secrets
     user: jenkins
     networks:
       - jenkins-net
@@ -27,22 +25,24 @@ services:
     image: jenkins/ssh-agent:jdk17
     container_name: jenkins-agent-1
     privileged: true
-    # user: jenkins # By default set to jenkins
+    # user: jenkins (default)
     expose:
       - 22
     environment:
-      - JENKINS_AGENT_NAME=jenkins-agent-${RANDOM}
+      - JENKINS_AGENT_NAME=jenkins-agent-1
       - JENKINS_AGENT_SSH_PUBKEY=${PUB_KEY}
-
     networks:
       - jenkins-net
 
-### IF USING DOCKER SWARM ###
-# secrets: 
-#   jenkins-secret:
-#     file: ./jenkins_secrets/jenkins-agent-1
-#   # jenkins-agent-name:
-#   #   file: ./jenkins_agent_name
+  nginx-docker:
+    build:
+      context: ./nginx-docker
+      dockerfile: Dockerfile
+    container_name: jenkins-rproxy
+    ports:
+      - "80:80"
+    networks:
+      - jenkins-net
 
 volumes:
   jenkins_data:
@@ -50,4 +50,4 @@ volumes:
 networks:
   jenkins-net:
     external:
-      name: external-jenkins-network
+      true
