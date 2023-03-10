@@ -5,7 +5,7 @@ LABEL Maintainer="rahul.singh"
 RUN apk apt update && \
     apk upgrade
 RUN mkdir -p /home/backup
-RUN mv /etc/nginx/conf.d/default.conf /home/backup
+# RUN mv /etc/nginx/conf.d/default.conf /home/backup
 RUN mv /etc/nginx/nginx.conf /home/backup
 
 # Copy custom configuration
