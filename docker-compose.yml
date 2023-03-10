@@ -20,6 +20,8 @@ services:
     user: jenkins
     networks:
       - jenkins-net
+    depends_on:
+      - nginx-docker
 
   jenkins-agent:
     image: jenkins/ssh-agent:jdk17
@@ -33,8 +35,10 @@ services:
       - JENKINS_AGENT_SSH_PUBKEY=${PUB_KEY}
     networks:
       - jenkins-net
+    depends_on:
+      - jenkins-master
 
-  nginx-docker:
+  nginx:
     build:
       context: ./nginx-docker
       dockerfile: Dockerfile
