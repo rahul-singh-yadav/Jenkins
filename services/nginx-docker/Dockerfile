@@ -4,9 +4,8 @@ LABEL Maintainer="rahul.singh"
 ## Execute shell commands
 RUN apk update && \
     apk upgrade
-RUN mkdir -p /home/backup
-# RUN mv /etc/nginx/conf.d/default.conf /home/backup
-RUN mv /etc/nginx/nginx.conf /home/backup
+
+RUN rm /etc/nginx/conf.d/default.conf
 
 # Copy custom configuration
 COPY /config/nginx.jenkins.conf /etc/nginx/conf.d/nginx.jenkins.conf
