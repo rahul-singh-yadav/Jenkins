@@ -2,17 +2,17 @@ FROM nginx:1.23.3-alpine-slim
 LABEL Maintainer="rahul.singh"
 
 ## Execute shell commands
-RUN apk apt update && \
+RUN apk update && \
     apk upgrade
 RUN mkdir -p /home/backup
 # RUN mv /etc/nginx/conf.d/default.conf /home/backup
 RUN mv /etc/nginx/nginx.conf /home/backup
 
 # Copy custom configuration
-COPY $pwd/nginx-docker/config/nginx.jenkins.conf /etc/nginx/conf.d/nginx.jenkins.conf
-COPY $pwd/nginx-docker/config/nginx.conf /etc/nginx/nginx.conf
+COPY /config/nginx.jenkins.conf /etc/nginx/conf.d/nginx.jenkins.conf
+COPY /config/nginx.conf /etc/nginx/nginx.conf
 
-# Check Cofig
+# Check Config
 RUN nginx -t
 
 # Expose: HTTP

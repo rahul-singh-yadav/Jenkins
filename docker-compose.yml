@@ -38,9 +38,9 @@ services:
     depends_on:
       - jenkins-master
 
-  nginx:
+  nginx-docker:
     build:
-      context: ./nginx-docker
+      context: ./services/nginx-docker
       dockerfile: Dockerfile
     container_name: jenkins-rproxy
     ports:
